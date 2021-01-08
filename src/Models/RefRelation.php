@@ -22,7 +22,8 @@ class RefRelation extends Model
         'ref_model_id', 'name', 'type', 'keys'
     ];
 
-    public function ref_model(): BelongsTo {
+    public function ref_model(): BelongsTo
+    {
         return $this->belongsTo(RefModel::class);
     }
 

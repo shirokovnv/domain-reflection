@@ -25,21 +25,24 @@ class RefModel extends Model
     /**
      * @return HasMany
      */
-    public function ref_fields(): HasMany {
+    public function ref_fields(): HasMany
+    {
         return $this->hasMany(RefField::class);
     }
 
     /**
      * @return HasMany
      */
-    public function ref_relations(): HasMany {
+    public function ref_relations(): HasMany
+    {
         return $this->hasMany(RefRelation::class);
     }
 
     /**
      * @return HasManyThrough
      */
-    public function ref_fkeys(): HasManyThrough {
+    public function ref_fkeys(): HasManyThrough
+    {
         return $this->hasManyThrough(RefFkey::class, RefField::class);
     }
 }

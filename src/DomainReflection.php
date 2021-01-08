@@ -26,7 +26,8 @@ class DomainReflection
      * DomainReflection constructor.
      * @param ModelReflection $reflection
      */
-    public function __construct(ModelReflection $reflection) {
+    public function __construct(ModelReflection $reflection)
+    {
         $this->reflection = $reflection;
     }
 
@@ -36,7 +37,8 @@ class DomainReflection
      * @return mixed
      * @throws \Shirokovnv\ModelReflection\Exceptions\UnknownRelTypeException
      */
-    public function reflectModelToDB(string $model_class_name) {
+    public function reflectModelToDB(string $model_class_name)
+    {
 
         $domain_name = $this->makeDomainName($model_class_name);
         $schema = $this->reflection->getModelSchema($model_class_name);
@@ -66,7 +68,8 @@ class DomainReflection
      * Register in database all domain models by paths, specified in domain-reflection config
      * @throws \Shirokovnv\ModelReflection\Exceptions\UnknownRelTypeException
      */
-    public function registerDomainModels() {
+    public function registerDomainModels()
+    {
 
         $model_config = config('domain-reflection.models');
 
@@ -87,7 +90,8 @@ class DomainReflection
      * @param string $model_domain_name
      * @return mixed
      */
-    public function modelExists(string $model_domain_name) {
+    public function modelExists(string $model_domain_name)
+    {
         return RefModel::where('domain_name', $model_domain_name)->exists();
     }
 
@@ -97,16 +101,17 @@ class DomainReflection
      * @return mixed
      * @throws Illuminate\Database\Eloquent\ModelNotFoundException
      */
-    public function removeReflection(string $model_domain_name) {
+    public function removeReflection(string $model_domain_name)
+    {
         $ref_model = $this->findByClassName($model_domain_name);
 
-        $ref_model->ref_fkeys()->each(function($item, $key){
+        $ref_model->ref_fkeys()->each(function ($item, $key) {
             $item->delete();
         });
-        $ref_model->ref_relations()->each(function($item, $key){
+        $ref_model->ref_relations()->each(function ($item, $key) {
             $item->delete();
         });
-        $ref_model->ref_fields()->each(function($item, $key){
+        $ref_model->ref_fields()->each(function ($item, $key) {
             $item->delete();
         });
 
@@ -120,7 +125,8 @@ class DomainReflection
      * @return mixed
      * @throws Illuminate\Database\Eloquent\ModelNotFoundException
      */
-    public function findByDomainName(string $model_domain_name) {
+    public function findByDomainName(string $model_domain_name)
+    {
         return RefModel::with(['ref_fkeys', 'ref_fields', 'ref_relations'])
             ->where('domain_name', $model_domain_name)->firstOrFail();
     }
@@ -131,7 +137,8 @@ class DomainReflection
      * @return mixed
      * @throws Illuminate\Database\Eloquent\ModelNotFoundException
      */
-    public function findByClassName(string $model_class_name) {
+    public function findByClassName(string $model_class_name)
+    {
         $domain_name = $this->makeDomainName($model_class_name);
         return $this->findByDomainName($domain_name);
     }
@@ -141,7 +148,8 @@ class DomainReflection
      * @param $ref_model
      * @param $array_of_fields
      */
-    private function syncModelFields(&$ref_model, &$array_of_fields) {
+    private function syncModelFields(&$ref_model, &$array_of_fields)
+    {
 
         foreach ($array_of_fields as $field) {
             $ref_field = $ref_model->ref_fields()->where('name', $field['name'])->first();
@@ -166,7 +174,7 @@ class DomainReflection
 
         // ensure we don't have deleted fields
         $ref_fields = $ref_model->ref_fields()->get();
-        foreach($ref_fields as $field) {
+        foreach ($ref_fields as $field) {
 
             if (!in_array($field->name, Arr::pluck($array_of_fields, 'name'))) {
                 $field->delete();
@@ -181,7 +189,8 @@ class DomainReflection
      * @param $ref_model
      * @param $array_of_relations
      */
-    private function syncModelRelations(&$ref_model, &$array_of_relations) {
+    private function syncModelRelations(&$ref_model, &$array_of_relations)
+    {
         foreach ($array_of_relations as $relation) {
             $ref_relation = $ref_model->ref_relations()->where('name', $relation['name'])->first();
 
@@ -201,7 +210,7 @@ class DomainReflection
 
         // ensure we don't have deleted relations
         $ref_relations = $ref_model->ref_relations()->get();
-        foreach($ref_relations as $relation) {
+        foreach ($ref_relations as $relation) {
 
             if (!in_array($relation->name, Arr::pluck($array_of_relations, 'name'))) {
                 $relation->delete();
@@ -215,7 +224,8 @@ class DomainReflection
      * @param $ref_model
      * @param $array_of_fkeys
      */
-    private function syncModelForeignKeys(&$ref_model, &$array_of_fkeys) {
+    private function syncModelForeignKeys(&$ref_model, &$array_of_fkeys)
+    {
 
         foreach ($array_of_fkeys as $fkey) {
 
@@ -240,7 +250,7 @@ class DomainReflection
 
         // ensure we don't have deleted foreign keys
         $ref_fkeys = $ref_model->ref_fkeys()->get();
-        foreach($ref_fkeys as $fkey) {
+        foreach ($ref_fkeys as $fkey) {
 
             if (!in_array($fkey->name, Arr::pluck($array_of_fkeys, 'name'))) {
                 $fkey->delete();
@@ -255,12 +265,13 @@ class DomainReflection
      * @param string $class_name
      * @return string
      */
-    private function makeDomainName(string $class_name) {
+    private function makeDomainName(string $class_name)
+    {
 
         $name_components = explode("\\", $class_name);
         $collection = collect($name_components);
 
-        return $collection->map(function($item){
+        return $collection->map(function ($item) {
             return Str::snake($item);
         })->implode(".");
     }

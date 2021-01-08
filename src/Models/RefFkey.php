@@ -24,7 +24,8 @@ class RefFkey extends Model
     /**
      * @return BelongsTo
      */
-    public function ref_field(): BelongsTo {
+    public function ref_field(): BelongsTo
+    {
         return $this->belongsTo(RefField::class);
     }
 

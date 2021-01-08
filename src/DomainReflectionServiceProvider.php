@@ -22,7 +22,7 @@ class DomainReflectionServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 
         // Publishing is only necessary when using the CLI.
         if ($this->app->runningInConsole()) {
@@ -37,7 +37,7 @@ class DomainReflectionServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/domain-reflection.php', 'domain-reflection');
+        $this->mergeConfigFrom(__DIR__ . '/../config/domain-reflection.php', 'domain-reflection');
 
         // Register the service the package provides.
         $this->app->singleton('domain-reflection', function ($app) {
@@ -64,7 +64,7 @@ class DomainReflectionServiceProvider extends ServiceProvider
     {
         // Publishing the configuration file.
         $this->publishes([
-            __DIR__.'/../config/domain-reflection.php' => config_path('domain-reflection.php'),
+            __DIR__ . '/../config/domain-reflection.php' => config_path('domain-reflection.php'),
         ], 'config');
 
         // Registering package commands.

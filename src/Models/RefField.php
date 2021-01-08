@@ -27,7 +27,8 @@ class RefField extends Model
      * Associated model
      * @return BelongsTo
      */
-    public function ref_model(): BelongsTo {
+    public function ref_model(): BelongsTo
+    {
         return $this->belongsTo(RefModel::class);
     }
 
@@ -35,7 +36,8 @@ class RefField extends Model
      * Associated foreign keys (if exists)
      * @return HasOne
      */
-    public function ref_fkey(): HasOne {
+    public function ref_fkey(): HasOne
+    {
         return $this->hasOne(RefFkey::class);
     }
 }

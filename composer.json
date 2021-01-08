@@ -10,8 +10,14 @@
         }
     ],
     "homepage": "https://github.com/shirokovnv/domain-reflection",
-    "keywords": ["Laravel", "DomainReflection", "DDD", "Model Driven Development",
-    "php", "Domain Driven Development"],
+    "keywords": [
+        "Laravel",
+        "DomainReflection",
+        "DDD",
+        "Model Driven Development",
+        "php",
+        "Domain Driven Development"
+    ],
     "require": {
         "illuminate/support": "~5.8|~6|~7|~8",
         "illuminate/database": "^5.8|^6.0|^7.0|^8.0",
