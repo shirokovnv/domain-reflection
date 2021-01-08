@@ -1,0 +1,43 @@
+{
+    "name": "shirokovnv/domain-reflection",
+    "description": "The package for providing meta information about domain models.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Nickolai Shirokov",
+            "email": "shirokovnv@gmail.com",
+            "homepage": "https://github.com/shirokovnv"
+        }
+    ],
+    "homepage": "https://github.com/shirokovnv/domain-reflection",
+    "keywords": ["Laravel", "DomainReflection"],
+    "require": {
+        "illuminate/support": "~5.8|~6|~7|~8",
+        "illuminate/database": "^5.8|^6.0|^7.0|^8.0",
+        "shirokovnv/model-reflection": "~2.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~9.0",
+        "orchestra/testbench": "~5|~6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Shirokovnv\\DomainReflection\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Shirokovnv\\DomainReflection\\Tests\\": "tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Shirokovnv\\DomainReflection\\DomainReflectionServiceProvider"
+            ],
+            "aliases": {
+                "DomainReflection": "Shirokovnv\\DomainReflection\\Facades\\DomainReflection"
+            }
+        }
+    }
+}
