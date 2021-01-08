@@ -25,18 +25,18 @@ After installation type in console from the root folder:
 php artisan migrate
 ```
 
-Type: 
-
-```php
-php artisan vendor:publish --provider="Shirokovnv\DomainReflection\DomainReflectionServiceProvider" --tag=config
-```
-
 This will create tables for storing meta information about your models:
 
 - ref_models
 - ref_fields
 - ref_relations
 - ref_fkeys
+
+Publish configuration: 
+
+```php
+php artisan vendor:publish --provider="Shirokovnv\DomainReflection\DomainReflectionServiceProvider" --tag=config
+```
 
 Then add paths for your domain in configuration file domain-reflection.config
 
