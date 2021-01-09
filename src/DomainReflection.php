@@ -8,6 +8,8 @@ use Shirokovnv\DomainReflection\Models\RefModel;
 use Shirokovnv\DomainReflection\Models\RefField;
 use Shirokovnv\DomainReflection\Models\RefRelation;
 use Shirokovnv\DomainReflection\Models\RefFkey;
+use Shirokovnv\DomainReflection\Models\RefScope;
+use Shirokovnv\DomainReflection\Models\RefScopeArg;
 use Shirokovnv\DomainReflection\Utils\Helper;
 use Shirokovnv\ModelReflection\ModelReflection;
 
@@ -59,6 +61,7 @@ class DomainReflection
         $this->syncModelFields($model, $schema['fields']);
         $this->syncModelRelations($model, $schema['relations']);
         $this->syncModelForeignKeys($model, $schema['foreign_keys']);
+        $this->syncModelScopes($model, $schema['scopes']);
 
         return $model;
 
@@ -257,6 +260,61 @@ class DomainReflection
             }
 
         }
+    }
+
+    /**
+     * Synchronize information about scopes of specific model
+     * @param $ref_model
+     * @param $array_of_scopes
+     */
+    private function syncModelScopes(&$ref_model, &$array_of_scopes) {
+
+        foreach ($array_of_scopes as $scope) {
+            $ref_scope = $ref_model->ref_scopes()->where('name', $scope['name'])->first();
+
+            $params = [
+                'name' => $scope['name'],
+                'ref_model_id' => $ref_model->id
+            ];
+
+            if (!$ref_scope) {
+                $ref_scope = RefScope::create($params);
+            } else {
+                $ref_scope->update($params);
+            }
+
+            foreach ($scope['args'] as $scope_arg) {
+                $ref_scope_arg = $ref_scope->ref_scope_args()
+                    ->where('name', $scope_arg['name'])
+                    ->first();
+
+                $arg_params = [
+                    'name' => $scope_arg['name'],
+                    'position' => $scope_arg['position'],
+                    'isOptional' => $scope_arg['isOptional'],
+                    'typeHint' => $scope_arg['typeHint'],
+                    'ref_scope_id' => $ref_scope->id
+                ];
+
+                if (!$ref_scope_arg) {
+                    $ref_scope_arg = RefScopeArg::create($arg_params);
+                } else {
+                    $ref_scope_arg->update($arg_params);
+                }
+            }
+
+        }
+
+        // ensure we don't have deleted scopes
+        $ref_scopes = $ref_model->ref_scopes()->get();
+        foreach ($ref_scopes as $scope) {
+
+            if (!in_array($scope->name, Arr::pluck($array_of_scopes, 'name'))) {
+                $scope->delete();
+            }
+
+        }
+
     }
 
     /**

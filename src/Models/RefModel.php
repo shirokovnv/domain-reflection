@@ -45,4 +45,11 @@ class RefModel extends Model
     {
         return $this->hasManyThrough(RefFkey::class, RefField::class);
     }
+
+    /**
+     * @return HasMany
+     */
+    public function ref_scopes(): HasMany {
+        return $this->hasMany(RefScope::class);
+    }
 }

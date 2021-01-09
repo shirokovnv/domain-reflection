@@ -31,6 +31,8 @@ This will create tables for storing meta information about your models:
 - ref_fields
 - ref_relations
 - ref_fkeys
+- ref_scopes
+- ref_scope_args
 
 Publish configuration: 
 
