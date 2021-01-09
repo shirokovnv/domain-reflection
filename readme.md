@@ -40,7 +40,7 @@ Publish configuration:
 php artisan vendor:publish --provider="Shirokovnv\DomainReflection\DomainReflectionServiceProvider" --tag=config
 ```
 
-Then add paths for your domain in configuration file domain-reflection.config
+Then add paths for your domain in configuration file domain-reflection.php
 
 By default it's App/Models
 
