@@ -42,16 +42,14 @@ class DomainReflection
     public function reflectModelToDB(string $model_class_name)
     {
 
-        $domain_name = $this->makeDomainName($model_class_name);
         $schema = $this->reflection->getModelSchema($model_class_name);
 
         $params = [
-            'domain_name' => $domain_name,
             'class_name' => $schema['name'],
             'table_name' => $schema['table_name'],
         ];
 
-        $model = RefModel::where('domain_name', $domain_name)->first();
+        $model = RefModel::where('class_name', $model_class_name)->first();
         if ($model) {
             $model->update($params);
         } else {
@@ -75,38 +73,63 @@ class DomainReflection
     {
 
         $model_config = config('domain-reflection.models');
-
+        /**
+         * Initialize all domain models
+         */
         foreach ($model_config as $config) {
             $model_class_collection = Helper::collectClassInfo($config['path'], $config['namespace']);
 
             foreach ($model_class_collection as $class_name) {
                 $model = $this->reflectModelToDB($class_name);
 
-                echo $model->domain_name . " registered\r\n";
+                echo $model->class_name . " registered\r\n";
             }
+        }
+
+        /**
+         * Synchronize ref_model_id for all relations
+         */
+        $ref_relations = RefRelation::all();
+        foreach ($ref_relations as $ref_relation) {
+
+            $output_str = "{{ sync_status }}Relation: " .
+                $ref_relation->parent_class_name .
+                "->" . $ref_relation->name . " {{ link_status }} " .
+                $ref_relation->related_class_name;
+
+            if ($this->syncRelatedModelId($ref_relation)) {
+                $output_str = str_replace("{{ link_status }}", "linked to", $output_str);
+                $output_str = str_replace("{{ sync_status }}", "", $output_str);
+            } else {
+                $output_str = str_replace("{{ link_status }}", "not linked to", $output_str);
+                $output_str = str_replace("{{ sync_status }}", "Warning! ", $output_str);
+            }
+
+            echo $output_str . "\r\n";
+
         }
 
     }
 
     /**
      * Check if model exists in domain
-     * @param string $model_domain_name
+     * @param string $model_class_name
      * @return mixed
      */
-    public function modelExists(string $model_domain_name)
+    public function modelExists(string $model_class_name)
     {
-        return RefModel::where('domain_name', $model_domain_name)->exists();
+        return RefModel::where('class_name', $model_class_name)->exists();
     }
 
     /**
      * Removes information about specified model from database
-     * @param string $model_domain_name
+     * @param string $model_class_name
      * @return mixed
      * @throws Illuminate\Database\Eloquent\ModelNotFoundException
      */
-    public function removeReflection(string $model_domain_name)
+    public function removeReflection(string $model_class_name)
     {
-        $ref_model = $this->findByClassName($model_domain_name);
+        $ref_model = $this->findOrFailByClassName($model_class_name);
 
         $ref_model->ref_fkeys()->each(function ($item, $key) {
             $item->delete();
@@ -123,27 +146,24 @@ class DomainReflection
     }
 
     /**
-     * Searches for the specified model resource by domain name
-     * @param string $model_domain_name
-     * @return mixed
-     * @throws Illuminate\Database\Eloquent\ModelNotFoundException
-     */
-    public function findByDomainName(string $model_domain_name)
-    {
-        return RefModel::with(['ref_fkeys', 'ref_fields', 'ref_relations'])
-            ->where('domain_name', $model_domain_name)->firstOrFail();
-    }
-
-    /**
      * Searches for a specified model resource by class name
      * @param string $model_class_name
      * @return mixed
      * @throws Illuminate\Database\Eloquent\ModelNotFoundException
      */
-    public function findByClassName(string $model_class_name)
+    public function findOrFailByClassName(string $model_class_name)
     {
-        $domain_name = $this->makeDomainName($model_class_name);
-        return $this->findByDomainName($domain_name);
+        return RefModel::with(['ref_fkeys', 'ref_fields', 'ref_relations'])
+            ->where('class_name', $model_class_name)->firstOrFail();
+    }
+
+    /**
+     * @param string $model_class_name
+     * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model|object|null
+     */
+    public function findByClassName(string $model_class_name) {
+        return RefModel::with(['ref_fkeys', 'ref_fields', 'ref_relations'])
+            ->where('class_name', $model_class_name)->first();
     }
 
     /**
@@ -201,7 +221,10 @@ class DomainReflection
                 'name' => $relation['name'],
                 'ref_model_id' => $ref_model->id,
                 'type' => $relation['type'],
-                'keys' => $relation['keys']
+                'keys' => $relation['keys'],
+                'parent_class_name' => $relation['parent_class_name'],
+                'related_model_id' => null,
+                'related_class_name' => $relation['related_class_name']
             ];
 
             if (!$ref_relation) {
@@ -209,6 +232,8 @@ class DomainReflection
             } else {
                 $ref_relation->update($params);
             }
+
+            $this->syncRelatedModelId($ref_relation);
         }
 
         // ensure we don't have deleted relations
@@ -220,6 +245,7 @@ class DomainReflection
             }
 
         }
+
     }
 
     /**
@@ -317,20 +343,23 @@ class DomainReflection
 
     }
 
+
     /**
-     * Transforms class name to unified domain name
-     * e.g. App\Models\User -> app.models.user
-     * @param string $class_name
-     * @return string
+     * Synchronize related_model_id for specific relation
+     * @param $ref_relation
+     * @return int|null
      */
-    private function makeDomainName(string $class_name)
-    {
+    private function syncRelatedModelId(&$ref_relation) {
+        $ref_model = $this->findByClassName($ref_relation->related_class_name);
 
-        $name_components = explode("\\", $class_name);
-        $collection = collect($name_components);
+        if ($ref_model) {
+            $ref_relation->update([
+                'related_model_id' => $ref_model->id
+            ]);
 
-        return $collection->map(function ($item) {
-            return Str::snake($item);
-        })->implode(".");
+            return $ref_model->id;
+        }
+
+        return null;
     }
 }

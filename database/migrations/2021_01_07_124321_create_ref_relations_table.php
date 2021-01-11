@@ -19,9 +19,13 @@ class CreateRefRelationsTable extends Migration
             $table->string('name');
             $table->string('type')->nullable();
             $table->text('keys')->nullable();
+            $table->string('parent_class_name')->nullable();
+            $table->unsignedBigInteger('related_model_id')->nullable();
+            $table->string('related_class_name')->nullable();
             $table->timestamps();
 
             $table->foreign('ref_model_id')->references('id')->on('ref_models')->onDelete('cascade');
+            $table->foreign('related_model_id')->references('id')->on('ref_models')->onDelete('set null');
         });
     }
 

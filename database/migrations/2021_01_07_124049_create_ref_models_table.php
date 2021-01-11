@@ -15,7 +15,6 @@ class CreateRefModelsTable extends Migration
     {
         Schema::create('ref_models', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('domain_name')->unique();
             $table->string('class_name')->unique();
             $table->string('table_name');
             $table->timestamps();

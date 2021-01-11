@@ -19,10 +19,16 @@ class RefRelation extends Model
      * @var array
      */
     protected $fillable = [
-        'ref_model_id', 'name', 'type', 'keys'
+        'ref_model_id', 'name', 'type', 'keys',
+        'parent_class_name', 'related_model_id', 'related_class_name'
     ];
 
     public function ref_model(): BelongsTo
+    {
+        return $this->belongsTo(RefModel::class);
+    }
+
+    public function related_model(): BelongsTo
     {
         return $this->belongsTo(RefModel::class);
     }
